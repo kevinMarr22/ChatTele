@@ -8,8 +8,13 @@ app.use(express.static('public'));
 
 // Middleware para verificar la IP del usuario
 app.use((req, res, next) => {
+  // Saltar la verificación para archivos estáticos como favicon
+  if (req.path === '/favicon.ico' || req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+    return next();
+  }
+
   const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
-  const cleanIp = clientIp ? clientIp.replace('::ffff:', '').split(',')[0] : '';
+  const cleanIp = clientIp ? clientIp.replace('::ffff:', '').split(',')[0].trim() : '';
   const allowedIpRange = '192.168.1.';
 
   // Verificar si la IP pertenece a la red local
