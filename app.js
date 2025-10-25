@@ -15,7 +15,7 @@ app.use((req, res, next) => {
 
   const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
   const cleanIp = clientIp ? clientIp.replace('::ffff:', '').split(',')[0].trim() : '';
-  const allowedRanges = ['192.168.1.', '192.168.96.', '192.168.242.', '192.168.130.', '192.168.139.', '127.0.0.1', 'localhost'];
+  const allowedRanges = ['192.168.96.', '127.0.0.1', 'localhost'];
 
   // Verificar si la IP pertenece a alguna de las redes locales o es localhost
   const isAllowed = allowedRanges.some(range => cleanIp.startsWith(range) || cleanIp.includes(range));
