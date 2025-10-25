@@ -15,10 +15,12 @@ app.use((req, res, next) => {
 
   const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
   const cleanIp = clientIp ? clientIp.replace('::ffff:', '').split(',')[0].trim() : '';
-  const allowedIpRange = '192.168.1.';
+  const allowedRanges = ['192.168.1.', '192.168.96.', '192.168.242.', '192.168.130.', '192.168.139.'];
 
-  // Verificar si la IP pertenece a la red local
-  if (cleanIp.startsWith(allowedIpRange)) {
+  // Verificar si la IP pertenece a alguna de las redes locales
+  const isAllowed = allowedRanges.some(range => cleanIp.startsWith(range));
+
+  if (isAllowed) {
     next();
   } else {
     res.status(403).send('Acceso denegado: Solo los dispositivos conectados a la red local pueden acceder.');
