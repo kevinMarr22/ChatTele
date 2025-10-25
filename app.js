@@ -55,6 +55,11 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
   }
 });
 
+// Route for root path
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // For local development
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
