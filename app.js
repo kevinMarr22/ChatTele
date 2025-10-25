@@ -6,26 +6,15 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-// Middleware para verificar la IP del usuario
+// Middleware para verificar la IP del usuario (deshabilitado en producción para Vercel)
 app.use((req, res, next) => {
   // Saltar la verificación para archivos estáticos como favicon
   if (req.path === '/favicon.ico' || req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
     return next();
   }
 
-  const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
-  const cleanIp = clientIp ? clientIp.replace('::ffff:', '').split(',')[0].trim() : '';
-  const allowedRanges = ['192.168.96.', '127.0.0.1', 'localhost'];
-
-  // Verificar si la IP pertenece a alguna de las redes locales o es localhost
-  const isAllowed = allowedRanges.some(range => cleanIp.startsWith(range) || cleanIp.includes(range));
-
-  if (isAllowed) {
-    next();
-  } else {
-    // Para debugging, enviar la IP en el error
-    res.status(403).send(`Acceso denegado: Solo los dispositivos conectados a la red local pueden acceder. Tu IP: ${cleanIp}`);
-  }
+  // En producción con Vercel, la restricción de IP local no es factible, por lo que se permite el acceso
+  next();
 });
 
 // In-memory storage for messages (note: this is not persistent in serverless)
