@@ -6,15 +6,26 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-// Middleware para verificar la IP del usuario (deshabilitado en producción para Vercel)
+// Middleware para verificar la IP del usuario
 app.use((req, res, next) => {
   // Saltar la verificación para archivos estáticos como favicon
   if (req.path === '/favicon.ico' || req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
     return next();
   }
 
-  // En producción con Vercel, la restricción de IP local no es factible, por lo que se permite el acceso
-  next();
+  const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress;
+  const cleanIp = clientIp ? clientIp.replace('::ffff:', '').split(',')[0].trim() : '';
+
+  // Permitir acceso solo desde redes locales comunes (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+  const isLocalNetwork = cleanIp.startsWith('192.168.') || cleanIp.startsWith('10.') ||
+                         (cleanIp.startsWith('172.') && parseInt(cleanIp.split('.')[1]) >= 16 && parseInt(cleanIp.split('.')[1]) <= 31) ||
+                         cleanIp === '127.0.0.1' || cleanIp.includes('localhost');
+
+  if (isLocalNetwork) {
+    next();
+  } else {
+    res.status(403).send('Acceso denegado: Solo los dispositivos conectados a la red local pueden acceder.');
+  }
 });
 
 // In-memory storage for messages (note: this is not persistent in serverless)
